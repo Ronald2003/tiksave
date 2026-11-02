@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { ArrowDownToLine, ArrowRight, ArrowUpRight, Check, ChevronDown, FileVideo, Fingerprint, Link2, LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowDownToLine, ArrowRight, ArrowUpRight, Check, ChevronDown, FileVideo, Fingerprint, Link2, Sparkles } from "lucide-react";
 
 export const faqs = [
-  ["Can I download every TikTok without a watermark?", "No. The backend checks for media available from a public post. Removed, restricted, unsupported, or temporarily inaccessible posts may fail. TikSave does not remove or detect watermarks and cannot promise every returned file is watermark-free."],
-  ["Do I need to create an account?", "No. Paste a TikTok link, check availability, and download the available MP4 without registering or uploading a file. Download only content you have permission to save."],
-  ["Why is a download sometimes unavailable?", "A link identifies a TikTok post, but it does not supply an accessible MP4 file. If no permitted source is available, there is no download to offer. Creating an account or uploading a file is not required to use this downloader."],
+  ["Can I download every video?", "No. The backend checks for media available from a public post. Removed, restricted, unsupported, or temporarily inaccessible posts may fail. TikSave does not remove or detect watermarks and cannot promise every returned file is watermark-free."],
+  ["Do I need to create an account?", "No. Paste a supported video link, check availability, and download the available MP4 without registering or uploading a file. Download only content you have permission to save."],
+  ["Why is a download sometimes unavailable?", "A link identifies a post, but it does not supply an accessible MP4 file. If no permitted source is available, there is no download to offer. Creating an account or uploading a file is not required to use this downloader."],
   ["Can I download in HD?", "Quality depends on the source file. We request the best available quality but do not invent HD choices, upscale videos, or promise a resolution we cannot verify."],
-  ["Which TikTok links are supported?", "Use an HTTPS video link from tiktok.com, www.tiktok.com, or m.tiktok.com, or a supported vm.tiktok.com, vt.tiktok.com, or tiktok.com/t/ short link. Private, restricted, removed, and inaccessible content may not resolve."],
+  ["Which platforms are supported?", "Use an HTTPS video link from TikTok, YouTube, Facebook, Instagram, X, Vimeo, Reddit, Bluesky, Dailymotion, Pinterest, Twitch clips, or Streamable. Facebook videos must be publicly accessible. Private, restricted, removed, and inaccessible content may not resolve."],
   ["Does TikSave remove a watermark from a file?", "No. TikSave uses media supplied by the source. It does not remove TikTok or creator watermarks. A public link is not proof of ownership or a license to reuse a video."],
 ];
 export function FaqSection({ full = false }: { full?: boolean }) {
@@ -14,7 +14,7 @@ export function FaqSection({ full = false }: { full?: boolean }) {
 }
 export function HowSection() {
   const steps = [
-    { title: "Find the moment", text: "Open a TikTok video, tap Share, and copy its link.", Icon: Link2 },
+    { title: "Find the moment", text: "Open a video on a supported platform, tap Share, and copy its link.", Icon: Link2 },
     { title: "Drop in the link", text: "Paste it above. We check the link and request an available video.", Icon: Fingerprint },
     { title: "Keep the original", text: "If an MP4 is available, download it straight to your device.", Icon: ArrowDownToLine },
   ];
@@ -22,6 +22,5 @@ export function HowSection() {
 }
 export function FeatureSection() { return <section className="feature-section container" id="features"><div className="section-heading"><h2>The original is the whole point.</h2><p>Less friction. More control. No promises we can’t keep.</p></div><div className="feature-grid">
   <article className="feature-card feature-main"><span className="feature-icon"><FileVideo size={22} aria-hidden="true" /></span><div className="format-visual" aria-hidden="true"><div className="file-tile"><FileVideo size={35} strokeWidth={1.3} /><span>.mp4</span></div><span className="quality-stamp"><Check size={13} />MP4 download</span></div><h3>The available MP4. Ready to save.</h3><p>Download the video supplied by the source. TikSave does not upscale it or remove watermarks.</p><div className="feature-meta"><span>MP4 FORMAT</span><span>SOURCE QUALITY</span></div></article>
-  <article className="feature-card"><span className="feature-icon"><LockKeyhole size={22} aria-hidden="true" /></span><h3>No registration. No extra steps.</h3><p>Paste a link and check available downloads. No email address, password, or original-file upload is required.</p><span className="small-note"><ShieldCheck size={14} aria-hidden="true" />Available public downloads work without signing in</span></article>
   <article className="feature-card feature-tint"><span className="feature-icon"><Sparkles size={22} aria-hidden="true" /></span><h3>Your browser is all you need.</h3><p>Check a link without an account, an app install, or a browser extension. Works right in your browser.</p><span className="small-note">Made for your phone and your desktop <ArrowUpRight size={14} aria-hidden="true" /></span></article>
   </div></section>; }

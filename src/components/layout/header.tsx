@@ -13,7 +13,7 @@ function subscribeTheme(callback: () => void) {
 export function Header() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const dark = useSyncExternalStore(subscribeTheme, () => document.documentElement.classList.contains("dark"), () => false);
+  const dark = useSyncExternalStore(subscribeTheme, () => document.documentElement.classList.contains("dark"), () => true);
   function toggleTheme() {
     const value = !dark;
     document.documentElement.classList.toggle("dark", value);

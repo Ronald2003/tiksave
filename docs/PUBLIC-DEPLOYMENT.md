@@ -55,7 +55,7 @@ This is the upstream Cobalt image, not your Next.js repository. Connect the imag
 | `DURATION_LIMIT` | `300` |
 | `API_AUTH_REQUIRED` | `1` |
 | `API_KEY_URL` | `file:///etc/secrets/keys.json` |
-| `DISABLED_SERVICES` | `bilibili,bsky,dailymotion,facebook,instagram,loom,ok,pinterest,newgrounds,reddit,rutube,snapchat,soundcloud,streamable,tumblr,twitch,twitter,vimeo,vk,youtube` |
+| `DISABLED_SERVICES` | `bilibili,loom,ok,newgrounds,rutube,snapchat,soundcloud,tumblr,vk` |
 
 Do not copy the local `127.0.0.1` settings to Render. Do not configure login cookies or additional services. The current source has been tested at Cobalt 11.7.1; the `:11` image tag can change within that major version, so record the deployed image digest for repeatability.
 
@@ -66,7 +66,7 @@ Do not copy the local `127.0.0.1` settings to Render. Do not configure login coo
   "YOUR_GENERATED_UUID": {
     "name": "TikSave website",
     "limit": 20,
-    "allowedServices": ["tiktok"]
+    "allowedServices": ["tiktok", "youtube", "facebook", "instagram", "twitter", "vimeo", "reddit", "bsky", "dailymotion", "pinterest", "twitch", "streamable"]
   }
 }
 ```

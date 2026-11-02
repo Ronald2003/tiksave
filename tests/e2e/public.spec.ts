@@ -1,12 +1,18 @@
 import { test, expect } from "@playwright/test";
 test("homepage is responsive and supports theme switching", async ({ page }, testInfo) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Download TikTok VideosWithout Watermark");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your favorite videos.Ready to save.");
   await expect(page.getByRole("button", { name: "Download", exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await expect(page.getByRole("link", { name: "Sign in", exact: true })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Open your creator library" })).toHaveCount(0);
   await page.screenshot({ path: `test-results/home-${testInfo.project.name}.png`, fullPage: true });
+  await expect(page.locator("html")).toHaveClass(/dark/);
+  await expect(page.getByText("No registration. No extra steps.", {exact:true})).toHaveCount(0);
+  await page.getByRole("button", { name: "Switch to light theme" }).click();
+  await expect(page.locator("html")).not.toHaveClass(/dark/);
+  await page.reload();
+  await expect(page.locator("html")).not.toHaveClass(/dark/);
   await page.getByRole("button", { name: "Switch to dark theme" }).click();
   await expect(page.locator("html")).toHaveClass(/dark/);
   await page.screenshot({ path: `test-results/home-dark-${testInfo.project.name}.png`, fullPage: true });

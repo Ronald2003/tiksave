@@ -28,7 +28,7 @@ async function requestCobalt(endpoint: URL, canonicalUrl: string) {
   try {
     response = await fetch(endpoint, {
       method: "POST", headers: { Accept: "application/json", "Content-Type": "application/json", ...(process.env.COBALT_API_KEY ? { Authorization: `Api-Key ${process.env.COBALT_API_KEY}` } : {}) },
-      body: JSON.stringify({ url: canonicalUrl, downloadMode: "auto", videoQuality: "max", alwaysProxy: true, localProcessing: "disabled", filenameStyle: "basic" }),
+      body: JSON.stringify({ url: canonicalUrl, downloadMode: "auto", videoQuality: "1080", youtubeVideoCodec: "h264", youtubeVideoContainer: "mp4", alwaysProxy: true, localProcessing: "disabled", filenameStyle: "basic" }),
       signal: AbortSignal.timeout(15000), redirect: "error", cache: "no-store",
     });
   } catch { throw new ApiError(503, "provider_error", "The download backend is offline or did not respond. Please try again later."); }

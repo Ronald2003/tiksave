@@ -60,3 +60,9 @@ Only a configured backend origin and its short-lived `/tunnel` URLs are returned
 ## Attribution
 
 Cobalt by imput is licensed under [AGPL-3.0](https://github.com/imputnet/cobalt/blob/main/LICENSE). Its source is available at the pinned revision above. Retain attribution and review the upstream license obligations for any redistribution, modification, or public deployment. FFmpeg and other upstream dependencies have their own licenses. Local source/configuration stays separate from TikSave's deployment archive.
+
+## Multi-platform update
+
+The public form accepts TikTok, YouTube (videos and Shorts), public Facebook videos/Reels, Instagram videos/Reels, X, Vimeo, Reddit, Bluesky, Dailymotion, Pinterest videos, Twitch clips, and Streamable. Exact HTTPS hosts are allowlisted; the app contacts only the configured Cobalt backend for non-TikTok links. TikTok short-link safety and the optional TikTok creator library are unchanged. Albums, slideshows, playlists, and audio-only responses are not included. The backend requests up to 1080p H.264 MP4 for compatibility; the five-minute duration limit remains. Availability varies by platform and hosting network. Do not use login cookies or bypass access restrictions.
+
+Dark is the default theme; an explicit saved light preference is retained.
