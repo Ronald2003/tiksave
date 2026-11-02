@@ -81,5 +81,5 @@ Audit reference: [minimatch globparts amplification advisory](https://github.com
 
 - 129 unit/component tests, lint, strict typecheck, and `next build --webpack` pass.
 - Apify cloud run `BfVIIHZvQhaTdablf` delivered the user's `bTsGuYRerK8` video at 720p in 13 seconds for $0.040. The 7.1 MB MP4 passed a full FFmpeg video/audio decode.
-- Integration uses a production-only Netlify secret, one fixed actor, a $0.10 per-run cap, a provider-required 300-second runtime ceiling with cancellation after the 40-second wait, no residential fallback, no cookies, and no billed retries. Tests cover output URL validation, response bounds, quota errors, aborts, and routing/rate limits.
+- Integration uses a production-only Netlify secret, one fixed actor, a $0.10 per-run cap, a provider-required 300-second runtime ceiling with separate signed status polling, no residential fallback, no cookies, and no billed retries. Tests cover output URL validation, response bounds, quota errors, signed-job tampering, and routing/rate limits.
 - Free credits are shared by every visitor; unlimited availability, long videos, and all YouTube content are not guaranteed. Five-minute UI availability does not delete Apify storage.

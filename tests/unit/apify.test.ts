@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { parseApifyDownload, resolveApifyYouTube } from "@/lib/video/resolvers/apify";
+import { parseApifyDownload, resolveApifyYouTube, pollApifyYouTube } from "@/lib/video/resolvers/apify";
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 const videoId = "bTsGuYRerK8";
 const storeId = "EopnmbB0DnsTpDqph";
@@ -27,12 +27,18 @@ describe("YouTube cloud provider", () => {
     expect(JSON.parse(options.body)).toEqual({ urls: [{ url: `https://www.youtube.com/watch?v=${videoId}` }], quality: "720", format: "default", residentialProxyMode: "disabled" });
     expect(JSON.stringify(result)).not.toContain("explicit-test-token");
   });
-  it("aborts an unfinished run rather than creating another", async () => {
+  it("polls a signed job without creating another billed run and rejects tampering", async () => {
     vi.stubEnv("APIFY_API_TOKEN", "explicit-test-token");
-    const fetch = vi.fn().mockResolvedValueOnce(reply({ data: { ...run.data, status: "RUNNING" } })).mockResolvedValueOnce(reply({})); vi.stubGlobal("fetch", fetch);
-    await expect(resolveApifyYouTube(`https://youtu.be/${videoId}`)).rejects.toThrow("took too long");
-    expect(fetch).toHaveBeenCalledTimes(2);
-    expect(fetch.mock.calls[1][0]).toContain(`/actor-runs/${run.data.id}/abort`);
+    const fetch = vi.fn().mockResolvedValueOnce(reply({ data: { ...run.data, status: "RUNNING" } })).mockResolvedValueOnce(reply(run)).mockResolvedValueOnce(reply([item])); vi.stubGlobal("fetch", fetch);
+    const pending = await resolveApifyYouTube("https://youtu.be/" + videoId);
+    expect(pending).toMatchObject({ status: "processing" });
+    if (!("jobToken" in pending)) throw new Error("Expected pending job");
+    await expect(pollApifyYouTube(pending.jobToken + "tampered")).rejects.toThrow("expired");
+    expect(fetch).toHaveBeenCalledTimes(1);
+    const ready = await pollApifyYouTube(pending.jobToken);
+    expect(ready).toMatchObject({ status: "ready", title: "Test video" });
+    expect(fetch.mock.calls[1][0]).toContain("/actor-runs/" + run.data.id);
+    expect(fetch.mock.calls.filter(call => call[1]?.method === "POST")).toHaveLength(1);
   });
   it("does not retry quota or transport failures and hides provider details", async () => {
     vi.stubEnv("APIFY_API_TOKEN", "explicit-test-token");
