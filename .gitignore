@@ -1,0 +1,14 @@
+node_modules/
+.local/
+.next/
+.netlify/
+.env*
+!.env.example
+coverage/
+test-results/
+playwright-report/
+*.tsbuildinfo
+next-env.d.ts
+.supabase/
+supabase/.temp/
+supabase/.branches/

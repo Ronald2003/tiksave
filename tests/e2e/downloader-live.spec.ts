@@ -1,0 +1,22 @@
+import { test, expect } from "@playwright/test";
+import { readFile } from "node:fs/promises";
+test("LIVE anonymous TikTok link resolves and downloads a real MP4", async ({ page }) => {
+  test.skip(process.env.RUN_COBALT_TEST !== "1", "Explicit live-network test; requires the local Cobalt backend and a permitted test URL.");
+  test.setTimeout(60000);
+  const url = process.env.COBALT_TEST_URL;
+  if (!url) throw new Error("Set COBALT_TEST_URL to a public video you have permission to download.");
+  await page.goto("/");
+  await expect(page.getByRole("link", { name: "Sign in", exact: true })).toHaveCount(0);
+  await page.getByRole("textbox").fill(url);
+  await page.getByRole("button", { name: "Download", exact: true }).click();
+  const link = page.getByRole("link", { name: "Download MP4", exact: true });
+  await expect(link).toBeVisible({ timeout: 30000 });
+  const waiting = page.waitForEvent("download");
+  await link.click();
+  const download = await waiting;
+  const bytes = await readFile((await download.path())!);
+  expect(bytes.length).toBeGreaterThan(16);
+  expect(bytes.subarray(4, 8).toString()).toBe("ftyp");
+  expect(download.suggestedFilename()).toMatch(/\.mp4$/i);
+  await page.screenshot({ path: "test-results/live-download.png", fullPage: true });
+});
