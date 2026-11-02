@@ -4,6 +4,9 @@ afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 const base = new URL("http://127.0.0.1:9000/");
 const reply = () => ({ status: "tunnel", url: `${base}tunnel?exp=${Date.now()+90000}&sig=test`, filename: "test.mp4" });
 describe("Cobalt media boundary", () => {
+  it("explains YouTube sign-in requirements without offering a download", () => {
+    expect(() => parseCobaltDownload({ status: "error", error: { code: "error.api.youtube.login" } }, base)).toThrow("YouTube requires sign-in");
+  });
   it("passes a configured backend key only in the server request header", async () => {
     vi.stubEnv("COBALT_API_URL", base.href); vi.stubEnv("COBALT_API_KEY", "explicit-unit-test-key");
     const fetch=vi.fn().mockResolvedValue(new Response(JSON.stringify(reply())));vi.stubGlobal("fetch",fetch);

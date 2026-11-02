@@ -67,3 +67,12 @@ Audit reference: [minimatch globparts amplification advisory](https://github.com
 4. Create/connect GitHub and Netlify, deploy, and verify the platform's runtime and IP header behavior. No hosted deployment is claimed.
 5. One uploaded original per video; no transcoding, distinct HD rendition, watermark removal/detection, TikTok identity/ownership verification, Google OAuth, or deep codec/media inspection. Public metadata can be unavailable independently of an authorized original.
 6. Mobile-sized Chromium tests are not real Android/iOS device certification. Cross-browser and real-device acceptance remain manual.
+
+## Multi-platform update — 2 November 2026
+
+- 120 unit/component cases, lint and typecheck pass; the original 118-case suite and 10 desktop/mobile browser checks also passed before the final YouTube error-message test was added.
+- Production compiled with `next build --webpack`; local Turbopack could not launch its CSS worker. Netlify successfully deployed the normal production build.
+- Live Facebook Reel supplied by the user: resolver HTTP 200, media HTTP 200, 2,996,438 bytes, MP4 ftyp signature.
+- Live TikTok regression: resolver HTTP 200, media HTTP 200, 9,082,495 bytes, MP4 ftyp signature.
+- YouTube resolver is enabled, but a live public-video probe returned `error.api.youtube.login` from Cobalt. No login cookies, CAPTCHA bypass, or restriction bypass added. UI explains sign-in-required responses. Other enabled platforms are validated/routed in tests but have not all had real download checks.
+- Default dark theme and explicit light preference persistence verified on desktop/mobile. Three user-marked UI items removed.

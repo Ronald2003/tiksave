@@ -13,6 +13,10 @@ export function cobaltEndpoint(value: string) {
   return url;
 }
 export function parseCobaltDownload(value: unknown, endpoint: URL) {
+  const failure = z.object({ error: z.object({ code: z.string() }) }).safeParse(value);
+  if (failure.success && failure.data.error.code === "error.api.youtube.login") {
+    throw new ApiError(422, "authorization_required", "YouTube requires sign-in for this request. This server cannot download it. Try another public video or another platform.");
+  }
   const result = z.object({ status: z.literal("tunnel"), url: z.url(), filename: z.string().min(1).max(250) }).safeParse(value);
   if (!result.success) throw new ApiError(422, "video_not_found", "The download backend could not provide an MP4 for this link. The post may be unavailable or unsupported.");
   const url = new URL(result.data.url);
