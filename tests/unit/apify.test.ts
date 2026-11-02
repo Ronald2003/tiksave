@@ -21,7 +21,7 @@ describe("YouTube cloud provider", () => {
     const result = await resolveApifyYouTube(url);
     const [endpoint, options] = fetch.mock.calls[0];
     expect(endpoint).toContain("maxTotalChargeUsd=0.10");
-    expect(endpoint).toContain("timeout=45");
+    expect(endpoint).toContain("timeout=300");
     expect(endpoint).toContain("forcePermissionLevel=LIMITED_PERMISSIONS");
     expect(options.headers.Authorization).toBe("Bearer explicit-test-token");
     expect(JSON.parse(options.body)).toEqual({ urls: [{ url: `https://www.youtube.com/watch?v=${videoId}` }], quality: "720", format: "default", residentialProxyMode: "disabled" });

@@ -58,8 +58,8 @@ export async function resolveApifyYouTube(canonicalUrl: string) {
   const videoId = url.pathname === "/watch" ? url.searchParams.get("v") : url.hostname === "youtu.be" ? url.pathname.split("/")[1] : url.pathname.split("/")[2];
   if (!videoId || !/^[a-zA-Z0-9_-]{11}$/.test(videoId)) throw new ApiError(400, "invalid_url", "A YouTube video link is required.");
   try {
-    // Fixed actor, no credentials/proxies in input, no retry that could create a second billed run.
-    const result = await request("/acts/marielise.dev~youtube-video-downloader/runs?waitForFinish=40&timeout=45&memory=2048&maxTotalChargeUsd=0.10&restartOnError=false&forcePermissionLevel=LIMITED_PERMISSIONS", {
+    // Actor preflight requires 300 seconds; we cancel after the shorter website wait below.
+    const result = await request("/acts/marielise.dev~youtube-video-downloader/runs?waitForFinish=40&timeout=300&memory=2048&maxTotalChargeUsd=0.10&restartOnError=false&forcePermissionLevel=LIMITED_PERMISSIONS", {
       method: "POST", body: JSON.stringify({ urls: [{ url: `https://www.youtube.com/watch?v=${videoId}` }], quality: "720", format: "default", residentialProxyMode: "disabled" }),
     }, 45000);
     const run = z.object({ data: z.object({ id, status: z.string(), defaultDatasetId: id, defaultKeyValueStoreId: id }) }).parse(result).data;
