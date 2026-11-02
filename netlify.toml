@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build"
+  command = "node scripts/diagnose-youtube.mjs && npm run build"
   publish = ".next"
 [build.environment]
   NODE_VERSION = "22"
