@@ -76,3 +76,10 @@ Audit reference: [minimatch globparts amplification advisory](https://github.com
 - Live TikTok regression: resolver HTTP 200, media HTTP 200, 9,082,495 bytes, MP4 ftyp signature.
 - YouTube resolver is enabled, but a live public-video probe returned `error.api.youtube.login` from Cobalt. No login cookies, CAPTCHA bypass, or restriction bypass added. UI explains sign-in-required responses. Other enabled platforms are validated/routed in tests but have not all had real download checks.
 - Default dark theme and explicit light preference persistence verified on desktop/mobile. Three user-marked UI items removed.
+
+## YouTube Apify integration — 2 November 2026
+
+- 129 unit/component tests, lint, strict typecheck, and `next build --webpack` pass.
+- Apify cloud run `BfVIIHZvQhaTdablf` delivered the user's `bTsGuYRerK8` video at 720p in 13 seconds for $0.040. The 7.1 MB MP4 passed a full FFmpeg video/audio decode.
+- Integration uses a production-only Netlify secret, one fixed actor, a $0.10 per-run cap, a 45-second runtime limit, no residential fallback, no cookies, and no billed retries. Tests cover output URL validation, response bounds, quota errors, aborts, and routing/rate limits.
+- Free credits are shared by every visitor; unlimited availability, long videos, and all YouTube content are not guaranteed. Five-minute UI availability does not delete Apify storage.
