@@ -66,7 +66,7 @@ Do not copy the local `127.0.0.1` settings to Render. Do not configure login coo
   "YOUR_GENERATED_UUID": {
     "name": "TikSave website",
     "limit": 20,
-    "allowedServices": ["tiktok", "youtube", "facebook", "instagram", "twitter", "vimeo", "reddit", "bsky", "dailymotion", "pinterest", "twitch", "streamable"]
+    "allowedServices": ["tiktok", "facebook", "instagram", "twitter", "vimeo", "reddit", "bsky", "dailymotion", "pinterest", "twitch", "streamable"]
   }
 }
 ```
@@ -141,12 +141,3 @@ If you later attach a custom domain, update Netlify's site URL, Render's CORS or
 - Netlify Next.js integration: https://docs.netlify.com/build/frameworks/framework-setup-guides/nextjs/overview/
 
 Verified locally: a real anonymous TikTok-link download, unit tests, and a Next.js production build. **Not verified: this Render/Netlify deployment, hosted TikTok reachability, or reliable free public operation.** Render describes its Free plan as suitable for hobbies/previews, not production, and may suspend unusually high outbound traffic. Video downloads can consume allowances quickly; adding a payment method can change how overages are handled. Review each host's current settings before publishing.
-
-
-## YouTube cloud provider
-
-Set `APIFY_API_TOKEN` as a secret Netlify Functions environment variable to route YouTube through `marielise.dev/youtube-video-downloader`. Other platforms continue using Cobalt. Keep the Apify account on Free, with overage disabled; the recurring $5 allowance is shared across all visitors. Never put this token in a public variable, Git, or client code.
-
-The application requests one 720p MP4, disables paid residential fallback, caps each run at $0.10, and sets the provider-required 300-second runtime ceiling. The website starts one run and polls its status using an expiring signed job token, so long processing does not hold a server request open. It never retries billed run creation. The provider timeout and spending cap apply even if the visitor closes the page. Requests are limited to two per client and three site-wide per minute. These limits slow consumption; they do not reserve credits per visitor. Long videos and exhausted credits can fail.
-
-Only signed MP4 links in the returned Apify run’s own key-value store are accepted. Media travels directly from Apify to the browser. The five-minute UI window is not provider-side deletion; review Apify storage retention and delete old run storage through the account controls when appropriate. The privacy page describes this processing.

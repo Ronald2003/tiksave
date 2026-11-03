@@ -8,7 +8,7 @@ export default function Home() {
   return <><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structured).replace(/</g, "\\u003c") }} />
     <section className="hero"><div className="container hero-inner"><div className="hero-eyebrow"><span className="eyebrow-icon"><ArrowDownToLine size={13} aria-hidden="true" /></span>KEEP THE ORIGINAL</div>
       <h1>Your favorite videos.<br /><span>Ready to save.</span></h1>
-      <p className="hero-description">TikTok, YouTube, Facebook, Instagram, and more. Paste a video link to find an available MP4. Save only content you have permission to download.</p>
+      <p className="hero-description">TikTok, Facebook, Instagram, and more. Paste a video link to find an available MP4. Save only content you have permission to download.</p>
       <Downloader />
       <div className="hero-benefits"><span><Check size={15} aria-hidden="true" />Original MP4 quality</span><span><LockKeyhole size={14} aria-hidden="true" />Permission comes first</span></div>
       <Link className="how-link" href="/how-it-works"><CirclePlay size={17} aria-hidden="true" />New here? See how it works</Link>

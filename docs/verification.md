@@ -77,7 +77,7 @@ Audit reference: [minimatch globparts amplification advisory](https://github.com
 - YouTube resolver is enabled, but a live public-video probe returned `error.api.youtube.login` from Cobalt. No login cookies, CAPTCHA bypass, or restriction bypass added. UI explains sign-in-required responses. Other enabled platforms are validated/routed in tests but have not all had real download checks.
 - Default dark theme and explicit light preference persistence verified on desktop/mobile. Three user-marked UI items removed.
 
-## YouTube Apify integration — 2 November 2026
+## Historical YouTube Apify integration — 2 November 2026 (removed 3 November)
 
 - 129 unit/component tests, lint, strict typecheck, and `next build --webpack` pass.
 - Apify cloud run `BfVIIHZvQhaTdablf` delivered the user's `bTsGuYRerK8` video at 720p in 13 seconds for $0.040. The 7.1 MB MP4 passed a full FFmpeg video/audio decode.
@@ -85,3 +85,8 @@ Audit reference: [minimatch globparts amplification advisory](https://github.com
 - Free credits are shared by every visitor; unlimited availability, long videos, and all YouTube content are not guaranteed. Five-minute UI availability does not delete Apify storage.
 - Live deployment `b4fbc28`: the user's YouTube link returned a signed processing job, then a ready 720p result through the status endpoint. The complete 7,496,624-byte MP4 passed a full FFmpeg video/audio decode. Missing origin returned 403; a forged job returned 400. Download transfer was slow on the test connection and the media host did not support resuming byte ranges.
 - The initial 45-second actor timeout failed its 300-second preflight requirement. A synchronous follow-up suffered interrupted server responses; separate signed polling now keeps requests short. Temporary deployment diagnostics were removed. Browser UI interaction could not be rechecked because browser control remained disabled; the public API-to-file path was tested directly.
+
+## YouTube removal — 3 November 2026
+
+- Removed YouTube URL support, the Apify resolver and polling endpoint, polling UI, provider configuration instructions, and YouTube claims from page content and metadata at the user's request. Other platform routes and theme preferences are retained.
+- 119 tests pass, including rejection of YouTube links before any downloader call; strict typecheck and lint pass.

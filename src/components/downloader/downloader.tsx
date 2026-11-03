@@ -21,16 +21,7 @@ export function Downloader() {
   const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<z.infer<typeof schema>>({ resolver: zodResolver(schema), defaultValues: { url: "" } });
   async function resolve(values: z.infer<typeof schema>) {
     setError(""); setResult(null); setExpired(false); setCopied(false);
-    try {
-      let video = await requestApi<VideoResult>("/api/videos/resolve", { method: "POST", body: JSON.stringify(values) });
-      let polls = 0;
-      while (video.status === "processing" && video.jobToken && polls++ < 110) {
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        video = await requestApi<VideoResult>("/api/videos/youtube", { method: "POST", body: JSON.stringify({ jobToken: video.jobToken }) });
-      }
-      if (video.status === "processing") throw new Error("This video took too long to prepare. Try a shorter video.");
-      setResult(video);
-    }
+    try { setResult(await requestApi<VideoResult>("/api/videos/resolve", { method: "POST", body: JSON.stringify(values) })); }
     catch (error) { setError((error as Error).message); }
   }
   async function paste() {

@@ -7,7 +7,7 @@ import { siteUrl } from "@/lib/env";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
   title: { default: "TikSave | Video downloader", template: "%s | TikSave" },
-  description: "Download available MP4 videos from TikTok, YouTube, Facebook, Instagram, and more. Use only content you have permission to save.",
+  description: "Download available MP4 videos from TikTok, Facebook, Instagram, and more. Use only content you have permission to save.",
   alternates: { canonical: "/" },
   openGraph: { type: "website", siteName: "TikSave", title: "TikSave | Keep the original", description: "Check a link. Find an authorized original. Keep every detail.", images: ["/opengraph-image"] },
   twitter: { card: "summary_large_image" },

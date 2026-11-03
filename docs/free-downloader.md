@@ -55,7 +55,7 @@ Unit tests cover fixed backend configuration, tunnel origin/path/expiry validati
 
 The software has no API subscription fee. **No free public backend hosting has been provisioned or promised.** A Netlify deployment cannot reach the developer computer's loopback address; the app deliberately rejects that configuration in production. A public website needs a continuously available HTTPS Cobalt instance under your control or with the instance owner's permission, plus abuse protection, bandwidth planning, and maintenance. Do not use another public Cobalt instance without permission or bypass its bot protection. See [upstream hosting](https://github.com/imputnet/cobalt/blob/main/docs/run-an-instance.md) and [API access rules](https://github.com/imputnet/cobalt/blob/main/docs/api.md).
 
-For Cobalt downloads, only the configured backend origin and its short-lived `/tunnel` URLs are returned to browsers. YouTube can use the separate Apify integration below. Arbitrary returned URLs and external redirect responses are rejected. URL validation, safe short-link resolution, mutation-origin checks and rate limiting still apply.
+For Cobalt downloads, only the configured backend origin and its short-lived `/tunnel` URLs are returned to browsers. Arbitrary returned URLs and external redirect responses are rejected. URL validation, safe short-link resolution, mutation-origin checks and rate limiting still apply.
 
 ## Attribution
 
@@ -63,15 +63,6 @@ Cobalt by imput is licensed under [AGPL-3.0](https://github.com/imputnet/cobalt/
 
 ## Multi-platform update
 
-The public form accepts TikTok, YouTube (videos and Shorts), public Facebook videos/Reels, Instagram videos/Reels, X, Vimeo, Reddit, Bluesky, Dailymotion, Pinterest videos, Twitch clips, and Streamable. Exact HTTPS hosts are allowlisted; the app contacts only the configured Cobalt backend for non-TikTok links. TikTok short-link safety and the optional TikTok creator library are unchanged. Albums, slideshows, playlists, and audio-only responses are not included. The backend requests up to 1080p H.264 MP4 for compatibility; the five-minute duration limit remains. Availability varies by platform and hosting network. Do not use login cookies or bypass access restrictions.
+The public form accepts TikTok, public Facebook videos/Reels, Instagram videos/Reels, X, Vimeo, Reddit, Bluesky, Dailymotion, Pinterest videos, Twitch clips, and Streamable. Exact HTTPS hosts are allowlisted; the app contacts only the configured Cobalt backend for non-TikTok links. TikTok short-link safety and the optional TikTok creator library are unchanged. Albums, slideshows, playlists, and audio-only responses are not included. The backend requests up to 1080p H.264 MP4 for compatibility; the five-minute duration limit remains. Availability varies by platform and hosting network. Do not use login cookies or bypass access restrictions.
 
 Dark is the default theme; an explicit saved light preference is retained.
-
-
-## YouTube cloud provider
-
-Set `APIFY_API_TOKEN` as a secret Netlify Functions environment variable to route YouTube through `marielise.dev/youtube-video-downloader`. Other platforms continue using Cobalt. Keep the Apify account on Free, with overage disabled; the recurring $5 allowance is shared across all visitors. Never put this token in a public variable, Git, or client code.
-
-The application requests one 720p MP4, disables paid residential fallback, caps each run at $0.10, and sets the provider-required 300-second runtime ceiling. The website starts one run and polls its status using an expiring signed job token, so long processing does not hold a server request open. It never retries billed run creation. The provider timeout and spending cap apply even if the visitor closes the page. Requests are limited to two per client and three site-wide per minute. These limits slow consumption; they do not reserve credits per visitor. Long videos and exhausted credits can fail.
-
-Only signed MP4 links in the returned Apify run’s own key-value store are accepted. Media travels directly from Apify to the browser. The five-minute UI window is not provider-side deletion; review Apify storage retention and delete old run storage through the account controls when appropriate. The privacy page describes this processing.
