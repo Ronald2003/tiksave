@@ -1,0 +1,9 @@
+const CACHE = "tiksave-offline-v2";
+self.addEventListener("install", event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(["/offline.html"]))));
+self.addEventListener("activate", event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith("tiksave-offline-") && key !== CACHE).map(key => caches.delete(key))))));
+self.addEventListener("fetch", event => {
+  const url = new URL(event.request.url);
+  // Never cache API responses, signed media, auth pages, or user documents.
+  if(event.request.method !== "GET" || event.request.mode !== "navigate" || url.origin !== self.location.origin || !["/", "/tools", "/tools/pdf-to-word", "/tools/word-to-pdf", "/tools/pdf-editor"].includes(url.pathname)) return;
+  event.respondWith(fetch(event.request).catch(() => caches.match("/offline.html")));
+});

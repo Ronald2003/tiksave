@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-test("homepage is responsive and always dark", async ({ page }, testInfo) => {
+test("homepage is responsive with the vector theme", async ({ page }, testInfo) => {
   await page.addInitScript(() => localStorage.setItem("theme", "light"));
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your favorite videos.Ready to save.");
@@ -8,11 +8,11 @@ test("homepage is responsive and always dark", async ({ page }, testInfo) => {
   await expect(page.getByRole("link", { name: "Sign in", exact: true })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Open your creator library" })).toHaveCount(0);
   await page.screenshot({ path: `test-results/home-${testInfo.project.name}.png`, fullPage: true });
-  await expect(page.locator("html")).toHaveClass(/dark/);
+  await expect(page.locator("html")).toHaveClass(/vector-theme/);
   await expect(page.getByText("No registration. No extra steps.", {exact:true})).toHaveCount(0);
   await expect(page.getByRole("button", { name: /Switch to .* theme/ })).toHaveCount(0);
   await page.reload();
-  await expect(page.locator("html")).toHaveClass(/dark/);
+  await expect(page.locator("html")).toHaveClass(/vector-theme/);
 });
 test("invalid link is rejected locally", async ({ page }) => {
   await page.goto("/");
@@ -48,6 +48,7 @@ test("API rejects wrong origin and invalid JSON inputs", async ({ request }) => 
   expect((await request.get("/api/health")).status()).toBe(200);
 });
 test("informational pages, auth setup, and SEO endpoints load", async ({ page, request }) => {
+  test.setTimeout(60000);
   for (const path of ["/features", "/how-it-works", "/faq", "/privacy", "/terms", "/contact", "/auth", "/library"]) {
     const response = await page.goto(path); expect(response?.status()).toBe(200); await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   }

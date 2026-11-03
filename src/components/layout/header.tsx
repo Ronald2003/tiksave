@@ -4,7 +4,8 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { ArrowDownToLine, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-const links = [["Home", "/"], ["How It Works", "/how-it-works"], ["Features", "/features"], ["FAQ", "/faq"]];
+import { InstallApp } from "@/components/install-app";
+const links = [["Home", "/"], ["How It Works", "/how-it-works"], ["Features", "/features"], ["Tools", "/tools"], ["FAQ", "/faq"]];
 export function Header() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -12,6 +13,7 @@ export function Header() {
     <Link href="/" className="brand" aria-label="TikSave home"><span className="brand-icon"><ArrowDownToLine aria-hidden="true" size={21} /></span>TikSave<span className="brand-period">.</span></Link>
     <nav className="desktop-nav" aria-label="Main navigation">{links.map(([label, href]) => <Link key={href} href={href} className={pathname === href ? "nav-link active" : "nav-link"} aria-current={pathname === href ? "page" : undefined}>{label}</Link>)}</nav>
     <div className="header-actions">
+      <InstallApp />
       <Button variant="ghost" size="icon" className="menu-toggle" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} aria-controls="mobile-nav" onClick={() => setOpen(!open)}>{open ? <X size={22} /> : <Menu size={22} />}</Button>
     </div></div>
     {open && <nav id="mobile-nav" className="mobile-nav" aria-label="Mobile navigation">{links.map(([label, href]) => <Link key={href} href={href} onClick={() => setOpen(false)}>{label}</Link>)}</nav>}

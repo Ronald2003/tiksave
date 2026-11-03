@@ -97,3 +97,11 @@ Audit reference: [minimatch globparts amplification advisory](https://github.com
 - Public TikTok photo links and safe short-link redirects can resolve to photo-only collections; the creator upload association remains video-only. Picker items must use unexpired tunnels at the configured backend. Each image has its own save button.
 - Successful ready results clear the input; errors and unavailable results keep it for retry. The original post URL remains in the result for copying.
 - The user photo post returned 15 images from the live backend. One 153,774-byte photo downloaded and passed FFmpeg decode.
+
+## Installable app, document tools and vector design — 3 November 2026
+
+- Added an installable manifest with generated PNG/maskable/Apple icons, a browser install prompt with manual fallback instructions, and a privacy-limited offline service worker. Browser checks confirm Cache Storage contains only the generic offline page and offline navigation displays it.
+- Added client-only PDF → editable-text DOCX, DOCX → flattened PDF, and a PDF annotation/page editor under `/tools`. See `document-tools.md` for format, privacy and size limits. The homepage remains the downloader.
+- The user's PDF reference and explicit light-palette approval replace the earlier dark-only direction. Added original SVG illustrations, lavender surfaces, flat purple/yellow/mint/pink colors, outlined controls and hard shadows across the site.
+- 127 unit/component tests pass; strict typecheck and lint pass; the Next.js webpack production build passes. All 20 desktop/mobile browser acceptance cases pass against the production build. Generated DOCX XML contains source text; rendered Word PDFs contain visible content; saved annotation text survives PDF export; drawn signatures export successfully. Production dependency audit reports zero vulnerabilities.
+- Earlier development-only failures were corrected test-origin configuration, a stale dark-theme assertion, and a hot-reload interruption; final production checks pass. Physical Android/iOS installation and complex third-party document fidelity remain manual checks. OCR, direct editing of existing paragraphs, legacy DOC input and selectable text in Word-generated PDFs are not included.

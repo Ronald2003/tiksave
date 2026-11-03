@@ -65,4 +65,4 @@ Cobalt by imput is licensed under [AGPL-3.0](https://github.com/imputnet/cobalt/
 
 The public form accepts TikTok, public Facebook videos/Reels, Instagram videos/Reels, X, Vimeo, Reddit, Bluesky, Dailymotion, Pinterest videos, Twitch clips, and Streamable. Exact HTTPS hosts are allowlisted; the app contacts only the configured Cobalt backend for non-TikTok links. TikTok short-link safety and the optional TikTok creator library are unchanged. Photo-only collections, including TikTok /photo/ posts, offer individual image downloads through validated backend tunnels. Mixed-media collections, playlists, and audio-only responses are not included. The backend requests up to 1080p H.264 MP4 for compatibility; the five-minute duration limit remains. Availability varies by platform and hosting network. Do not use login cookies or bypass access restrictions.
 
-The site uses a fixed dark theme; theme switching and saved light preferences are not used.
+The site uses a fixed illustrated light theme; theme switching and saved light preferences are not used.

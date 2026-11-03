@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowDownToLine, ArrowRight, ArrowUpRight, Check, ChevronDown, FileVideo, Fingerprint, Link2, Sparkles } from "lucide-react";
+import { VectorArt } from "./vector-art";
+import { ArrowUpRight, ChevronDown } from "lucide-react";
 
 export const faqs = [
   ["Can I download every video?", "No. The backend checks for media available from a public post. Removed, restricted, unsupported, or temporarily inaccessible posts may fail. TikSave does not remove or detect watermarks and cannot promise every returned file is watermark-free."],
@@ -10,17 +11,17 @@ export const faqs = [
   ["Does TikSave remove a watermark from a file?", "No. TikSave uses media supplied by the source. It does not remove TikTok or creator watermarks. A public link is not proof of ownership or a license to reuse a video."],
 ];
 export function FaqSection({ full = false }: { full?: boolean }) {
-  return <section className="faq-section container" id="faq"><div className="faq-intro"><span className="section-tag">A LITTLE CLARITY</span><h2>Good questions.<br />Straight answers.</h2><p>Everything you need to know before your first download.</p>{!full && <Link href="/faq" className="text-link">All your questions, answered <ArrowUpRight size={15} aria-hidden="true" /></Link>}</div><div className="faq-list">{(full ? faqs : faqs.slice(0, 4)).map(([question, answer]) => <details key={question}><summary>{question}<ChevronDown size={17} aria-hidden="true" /></summary><p>{answer}</p></details>)}</div></section>;
+  return <section className="faq-section container" id="faq"><div className="faq-intro"><VectorArt kind="chat" className="faq-art"/><span className="section-tag">A LITTLE CLARITY</span><h2>Good questions.<br />Straight answers.</h2><p>Everything you need to know before your first download.</p>{!full && <Link href="/faq" className="text-link">All your questions, answered <ArrowUpRight size={15} aria-hidden="true" /></Link>}</div><div className="faq-list">{(full ? faqs : faqs.slice(0, 4)).map(([question, answer]) => <details key={question}><summary>{question}<ChevronDown size={17} aria-hidden="true" /></summary><p>{answer}</p></details>)}</div></section>;
 }
 export function HowSection() {
   const steps = [
-    { title: "Find the moment", text: "Open a video on a supported platform, tap Share, and copy its link.", Icon: Link2 },
-    { title: "Drop in the link", text: "Paste it above. We check the link and request an available video.", Icon: Fingerprint },
-    { title: "Keep the original", text: "If an MP4 is available, download it straight to your device.", Icon: ArrowDownToLine },
+    { title: "Find the moment", text: "Open a video on a supported platform, tap Share, and copy its link.", art: "link" as const },
+    { title: "Drop in the link", text: "Paste it above. We check the link and request an available video.", art: "shield" as const },
+    { title: "Keep the original", text: "If an MP4 is available, download it straight to your device.", art: "download" as const },
   ];
-  return <section className="how-section container" id="how-it-works"><div className="section-heading"><h2>A link. A check. Your video.</h2><p>Three simple steps, with permissions built in.</p></div><div className="steps">{steps.map(({ title, text, Icon }, i) => <article className="step" key={title}><div className="step-top"><span className="step-number">0{i + 1}</span><Icon size={23} aria-hidden="true" /></div><h3>{title}</h3><p>{text}</p>{i < 2 && <ArrowRight className="step-arrow" size={19} aria-hidden="true" />}</article>)}</div></section>;
+  return <section className="how-section container" id="how-it-works"><div className="section-heading"><h2>A link. A check. Your video.</h2><p>Three simple steps, with permissions built in.</p></div><div className="steps">{steps.map(({ title, text, art }, i) => <article className="step" key={title}><div className="step-top"><span className="step-number">0{i + 1}</span><VectorArt kind={art}/></div><h3>{title}</h3><p>{text}</p></article>)}</div></section>;
 }
 export function FeatureSection() { return <section className="feature-section container" id="features"><div className="section-heading"><h2>The original is the whole point.</h2><p>Less friction. More control. No promises we can’t keep.</p></div><div className="feature-grid">
-  <article className="feature-card feature-main"><span className="feature-icon"><FileVideo size={22} aria-hidden="true" /></span><div className="format-visual" aria-hidden="true"><div className="file-tile"><FileVideo size={35} strokeWidth={1.3} /><span>.mp4</span></div><span className="quality-stamp"><Check size={13} />MP4 download</span></div><h3>The available MP4. Ready to save.</h3><p>Download the video supplied by the source. TikSave does not upscale it or remove watermarks.</p><div className="feature-meta"><span>MP4 FORMAT</span><span>SOURCE QUALITY</span></div></article>
-  <article className="feature-card feature-tint"><span className="feature-icon"><Sparkles size={22} aria-hidden="true" /></span><h3>Your browser is all you need.</h3><p>Check a link without an account, an app install, or a browser extension. Works right in your browser.</p><span className="small-note">Made for your phone and your desktop <ArrowUpRight size={14} aria-hidden="true" /></span></article>
+  <article className="feature-card feature-main"><VectorArt kind="file" className="feature-art"/><h3>The available MP4. Ready to save.</h3><p>Download the video supplied by the source. TikSave does not upscale it or remove watermarks.</p><div className="feature-meta"><span>MP4 FORMAT</span><span>SOURCE QUALITY</span></div></article>
+  <article className="feature-card feature-tint"><VectorArt kind="browser" className="feature-art"/><h3>Your browser is all you need.</h3><p>Check a link right in your browser, or install TikSave on your home screen. No account required.</p><span className="small-note">Made for your phone and your desktop <ArrowUpRight size={14} aria-hidden="true" /></span></article>
   </div></section>; }
