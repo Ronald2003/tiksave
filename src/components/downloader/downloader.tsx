@@ -21,7 +21,7 @@ export function Downloader() {
   const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<z.infer<typeof schema>>({ resolver: zodResolver(schema), defaultValues: { url: "" } });
   async function resolve(values: z.infer<typeof schema>) {
     setError(""); setResult(null); setExpired(false); setCopied(false);
-    try { setResult(await requestApi<VideoResult>("/api/videos/resolve", { method: "POST", body: JSON.stringify(values) })); }
+    try { const next = await requestApi<VideoResult>("/api/videos/resolve", { method: "POST", body: JSON.stringify(values) }); setResult(next); if (next.status === "ready") setValue("url", "", { shouldValidate: false, shouldDirty: false }); }
     catch (error) { setError((error as Error).message); }
   }
   async function paste() {
@@ -38,28 +38,29 @@ export function Downloader() {
   }
   async function copy() {
     try { await navigator.clipboard.writeText(result?.canonicalUrl || ""); setCopied(true); }
-    catch { setError("Clipboard access is blocked. Copy the video link from the field above."); }
+    catch { setError("Clipboard access is unavailable. Try copying the original post link."); }
   }
   return <div className="downloader-wrap" id="downloader">
     <form onSubmit={handleSubmit(resolve)} noValidate className="downloader-panel" aria-busy={isSubmitting}>
-      <div className="downloader-heading"><span className="step-dot">1</span><label htmlFor="tiktok-url">Your next download starts here</label><span className="format-label">MP4</span></div>
+      <div className="downloader-heading"><span className="step-dot">1</span><label htmlFor="tiktok-url">Your next download starts here</label><span className="format-label">VIDEO / PHOTO</span></div>
       <div className={`url-field ${errors.url ? "has-error" : ""}`}><Link2 size={21} className="url-icon" aria-hidden="true" />
-        <input id="tiktok-url" type="url" inputMode="url" placeholder="Paste a video link here..." autoComplete="off" spellCheck={false} aria-invalid={!!errors.url} aria-describedby={errors.url ? "url-error" : undefined} {...register("url")} disabled={isSubmitting} />
+        <input id="tiktok-url" type="url" inputMode="url" placeholder="Paste a video or photo link here..." autoComplete="off" spellCheck={false} aria-invalid={!!errors.url} aria-describedby={errors.url ? "url-error" : undefined} {...register("url")} disabled={isSubmitting} />
         <Button type="button" variant="secondary" size="sm" onClick={paste} disabled={isSubmitting}><Clipboard size={15} aria-hidden="true" />Paste</Button>
       </div>
       {errors.url && <p className="field-error" id="url-error" role="alert">{errors.url.message}</p>}
-      <Button type="submit" disabled={isSubmitting} className="download-submit">{isSubmitting ? <LoaderCircle className="spin" size={19} aria-hidden="true" /> : <ArrowDownToLine size={19} aria-hidden="true" />}{isSubmitting ? "Checking your video..." : "Download"}<ArrowRight size={18} aria-hidden="true" /></Button>
+      <Button type="submit" disabled={isSubmitting} className="download-submit">{isSubmitting ? <LoaderCircle className="spin" size={19} aria-hidden="true" /> : <ArrowDownToLine size={19} aria-hidden="true" />}{isSubmitting ? "Checking your link..." : "Download"}<ArrowRight size={18} aria-hidden="true" /></Button>
     </form>
     {error && <div className="alert error-alert" role="alert"><span>{error}</span><button onClick={() => setError("")} aria-label="Dismiss message"><X size={17} /></button></div>}
     {isSubmitting && <div className="result-panel result-skeleton" role="status" aria-label="Checking video details and original availability"><div className="skeleton skeleton-thumb" /><div><div className="skeleton skeleton-line" /><div className="skeleton skeleton-line short" /><p>Checking video details and original availability…</p></div></div>}
-    {result && <motion.section initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="result-panel" aria-label="Video result" aria-live="polite">
-      <div className="result-preview">{result.thumbnailUrl ? <img src={result.thumbnailUrl} alt="Video thumbnail" width="100" height="130" referrerPolicy="no-referrer" /> : <div className="empty-thumbnail"><Film size={28} aria-hidden="true" /><span>No preview</span></div>}</div>
-      <div className="result-details"><span className={`status-label ${result.status === "ready" ? "status-ready" : ""}`}>{result.status === "ready" ? <><Check size={13} aria-hidden="true" />{result.directDownload ? "Video available" : "Original available"}</> : result.status === "provider_error" ? "Availability not checked" : "Original unavailable"}</span>
-        <h2>{result.title || "Video"}</h2>{result.creatorName && <p>{result.creatorName}</p>}{result.videoId && <p className="result-id">Video {result.videoId}</p>}
+    {result && <motion.section initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="result-panel" aria-label="Download result" aria-live="polite">
+      {!result.images && (<div className="result-preview">{result.thumbnailUrl ? <img src={result.thumbnailUrl} alt="Video thumbnail" width="100" height="130" referrerPolicy="no-referrer" /> : <div className="empty-thumbnail"><Film size={28} aria-hidden="true" /><span>No preview</span></div>}</div>)}
+      <div className="result-details"><span className={`status-label ${result.status === "ready" ? "status-ready" : ""}`}>{result.status === "ready" ? <><Check size={13} aria-hidden="true" />{result.images ? `${result.images.length} photos available` : result.directDownload ? "Video available" : "Original available"}</> : result.status === "provider_error" ? "Availability not checked" : "Original unavailable"}</span>
+        <h2>{result.title || (result.images ? "Photo collection" : "Video")}</h2>{result.creatorName && <p>{result.creatorName}</p>}{result.videoId && <p className="result-id">Video {result.videoId}</p>}
         <p>{result.message}</p>{result.resolution && <p>{result.resolution} · MP4</p>}
+        {result.images && <div className="photo-results">{result.images.map((image, index) => <div key={image.url}><img src={image.url} alt={`Photo ${index + 1}`} loading="lazy" referrerPolicy="no-referrer" /><Button asChild size="sm"><a href={image.url} download={image.filename} rel="noopener noreferrer" onClick={(event) => { if (Date.now() >= image.expiresAt) { event.preventDefault(); setExpired(true); } }}><ArrowDownToLine size={15} aria-hidden="true" />Save image {index + 1}</a></Button></div>)}</div>}
         <div className="result-actions">{result.directDownload && <Button asChild><a href={result.directDownload.url} download={result.directDownload.filename} rel="noopener noreferrer" onClick={(event) => { if (Date.now() >= result.directDownload!.expiresAt) { event.preventDefault(); setExpired(true); } }}><ArrowDownToLine size={15} aria-hidden="true" />Download MP4</a></Button>}{result.assets?.map((asset) => <Button key={asset.id} size="sm" disabled={!!downloading} onClick={() => download(asset.id)}>{downloading === asset.id ? <LoaderCircle size={15} className="spin" /> : <ArrowDownToLine size={15} />}{asset.label} <span className="download-size">{formatBytes(asset.fileSize)}</span></Button>)}
           <Button variant="secondary" size="sm" onClick={copy}>{copied ? <Check size={14} /> : <Copy size={14} />}{copied ? "Copied" : "Copy link"}</Button></div>
-        {expired && <p className="field-error" role="alert">This download link expired. Press Download above to get a fresh link.</p>}
+        {expired && <p className="field-error" role="alert">This download link expired. Paste the original post link above and press Download to get fresh links.</p>}
       </div>
     </motion.section>}
   </div>;

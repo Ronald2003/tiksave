@@ -3,10 +3,10 @@ import { ArrowDownToLine, ArrowRight, ArrowUpRight, Check, ChevronDown, FileVide
 
 export const faqs = [
   ["Can I download every video?", "No. The backend checks for media available from a public post. Removed, restricted, unsupported, or temporarily inaccessible posts may fail. TikSave does not remove or detect watermarks and cannot promise every returned file is watermark-free."],
-  ["Do I need to create an account?", "No. Paste a supported video link, check availability, and download the available MP4 without registering or uploading a file. Download only content you have permission to save."],
+  ["Do I need to create an account?", "No. Paste a supported video link, check availability, and download the available videos or photos without registering or uploading a file. Download only content you have permission to save."],
   ["Why is a download sometimes unavailable?", "A link identifies a post, but it does not supply an accessible MP4 file. If no permitted source is available, there is no download to offer. Creating an account or uploading a file is not required to use this downloader."],
   ["Can I download in HD?", "Quality depends on the source file. Downloads request up to 1080p. We do not invent HD choices, upscale videos, or promise a resolution we cannot verify."],
-  ["Which platforms are supported?", "Use an HTTPS video link from TikTok, Facebook, Instagram, X, Vimeo, Reddit, Bluesky, Dailymotion, Pinterest, Twitch clips, or Streamable. Facebook videos must be publicly accessible. Private, restricted, removed, and inaccessible content may not resolve."],
+  ["Which platforms are supported?", "Use an HTTPS video or photo-post link from TikTok, Facebook, Instagram, X, Vimeo, Reddit, Bluesky, Dailymotion, Pinterest, Twitch clips, or Streamable. Facebook videos must be publicly accessible. Private, restricted, removed, and inaccessible content may not resolve."],
   ["Does TikSave remove a watermark from a file?", "No. TikSave uses media supplied by the source. It does not remove TikTok or creator watermarks. A public link is not proof of ownership or a license to reuse a video."],
 ];
 export function FaqSection({ full = false }: { full?: boolean }) {

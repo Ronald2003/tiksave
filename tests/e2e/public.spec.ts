@@ -20,6 +20,16 @@ test("invalid link is rejected locally", async ({ page }) => {
   await page.getByRole("button", { name: "Download", exact: true }).click();
   await expect(page.getByRole("alert").filter({ hasText: "secure link" })).toBeVisible();
 });
+test("photo result fixture clears the link and offers each image", async ({ page }) => {
+  await page.route("**/photo-fixture/*", route => route.fulfill({ contentType: "image/svg+xml", body: '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="180"><rect width="120" height="180" fill="#777"/></svg>' }));
+  await page.route("**/api/videos/resolve", route => route.fulfill({ json: { data: { status: "ready", images: [1,2].map(index => ({ url: `/photo-fixture/${index}`, filename: `image-${index}`, expiresAt: Date.now()+90000 })) } } }));
+  await page.goto("/");
+  await page.getByRole("textbox").fill("https://www.tiktok.com/@4kwallpapers85/photo/7688136271289388310");
+  await page.getByRole("button", { name: "Download", exact: true }).click();
+  await expect(page.getByRole("link", { name: "Save image 2" })).toBeVisible();
+  await expect(page.getByRole("textbox")).toHaveValue("");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
 test("explicit API fixture shows an unavailable source accurately", async ({ page }) => {
   // Browser-only fixture. Production has no mock mode, test hook, or fixture provider.
   await page.route("**/api/videos/resolve", (route) => route.fulfill({ json: { data: { status: "clean_source_unavailable", videoId: "6718335390845095173", assets: [], message: "Watermark-free original unavailable for this video." } } }));

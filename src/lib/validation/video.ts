@@ -17,7 +17,7 @@ export function parseVideoUrl(input: string) {
   const value = input.trim();
   const url = new URL(value);
   if (url.protocol !== "https:" || url.port || url.username || url.password || /[\\\u0000-\u0020]/.test(value) || /(?:^|\/)\.{1,2}(?:\/|$)|%2e/i.test(value)) throw new Error("Use a secure link from a supported video platform.");
-  if (["tiktok.com", "www.tiktok.com", "m.tiktok.com", "vt.tiktok.com", "vm.tiktok.com"].includes(url.hostname)) return { ...parseTikTokUrl(value), platform: "TikTok" };
+  if (["tiktok.com", "www.tiktok.com", "m.tiktok.com", "vt.tiktok.com", "vm.tiktok.com"].includes(url.hostname)) return { ...parseTikTokUrl(value, true), platform: "TikTok" };
   const platform = services[url.hostname];
   if (!platform) throw new Error("Use a secure link from a supported video platform.");
   if (url.pathname === "/") throw new Error("Paste a video link, rather than a homepage or profile.");

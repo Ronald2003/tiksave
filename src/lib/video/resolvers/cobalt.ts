@@ -15,13 +15,25 @@ export function cobaltEndpoint(value: string) {
 export function parseCobaltDownload(value: unknown, endpoint: URL) {
   const result = z.object({ status: z.literal("tunnel"), url: z.url(), filename: z.string().min(1).max(250) }).safeParse(value);
   if (!result.success) throw new ApiError(422, "video_not_found", "The download backend could not provide an MP4 for this link. The post may be unavailable or unsupported.");
-  const url = new URL(result.data.url);
+  if (!/\.mp4$/i.test(result.data.filename)) throw new ApiError(502, "provider_error", "The download backend returned an unsupported file.");
+  return { ...parseTunnel(result.data.url, endpoint), filename: result.data.filename.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-180) };
+}
+function parseTunnel(value: string, endpoint: URL) {
+  const url = new URL(value);
   const expiresAt = Number(url.searchParams.get("exp"));
   if (url.origin !== endpoint.origin || url.pathname !== "/tunnel" || url.username || url.password ||
-      !Number.isFinite(expiresAt) || expiresAt <= Date.now() || expiresAt > Date.now() + 300000 || !/\.mp4$/i.test(result.data.filename)) {
+      !Number.isFinite(expiresAt) || expiresAt <= Date.now() || expiresAt > Date.now() + 300000) {
     throw new ApiError(502, "provider_error", "The download backend returned an invalid or expired media link. Please try again.");
   }
-  return { url: url.href, filename: result.data.filename.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-180), expiresAt };
+  return { url: url.href, expiresAt };
+}
+export function parseCobaltMedia(value: unknown, endpoint: URL): Pick<import("@/lib/video/types").VideoResult, "directDownload" | "images"> {
+  if (z.object({ status: z.literal("picker") }).safeParse(value).success) {
+    const result = z.object({ picker: z.array(z.object({ type: z.literal("photo"), url: z.url() })).min(1).max(50) }).safeParse(value);
+    if (!result.success) throw new ApiError(422, "unsupported_media", "This collection could not be downloaded as photos. Try a photo-only post.");
+    return { images: result.data.picker.map((item, index) => ({ ...parseTunnel(item.url, endpoint), filename: `image-${index + 1}` })) };
+  }
+  return { directDownload: parseCobaltDownload(value, endpoint) };
 }
 async function requestCobalt(endpoint: URL, canonicalUrl: string) {
   let response: Response;
@@ -55,5 +67,5 @@ export async function resolveCobalt(canonicalUrl: string) {
   let data = await requestCobalt(endpoint, canonicalUrl);
   // Retry a transient page fetch once; never retry restrictions, rate limits, or authorization errors.
   if (z.object({ error: z.object({ code: z.literal("error.api.fetch.fail") }) }).safeParse(data).success) data = await requestCobalt(endpoint, canonicalUrl);
-  return parseCobaltDownload(data, endpoint);
+  return parseCobaltMedia(data, endpoint);
 }

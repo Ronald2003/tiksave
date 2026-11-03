@@ -1,9 +1,16 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cobaltEndpoint, parseCobaltDownload, resolveCobalt } from "@/lib/video/resolvers/cobalt";
+import { cobaltEndpoint, parseCobaltDownload, parseCobaltMedia, resolveCobalt } from "@/lib/video/resolvers/cobalt";
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 const base = new URL("http://127.0.0.1:9000/");
 const reply = () => ({ status: "tunnel", url: `${base}tunnel?exp=${Date.now()+90000}&sig=test`, filename: "test.mp4" });
 describe("Cobalt media boundary", () => {
+  it("accepts photo collections only through validated backend tunnels", () => {
+    const photo = { type: "photo", url: reply().url };
+    expect(parseCobaltMedia({ status: "picker", picker: [photo, photo] }, base).images).toHaveLength(2);
+    for (const picker of [[], [{ ...photo, url: "https://evil.test/image.jpg" }], [{ ...photo, type: "video" }], [{ ...photo, url: `${base}tunnel?exp=1` }]]) {
+      expect(() => parseCobaltMedia({ status: "picker", picker }, base)).toThrow();
+    }
+  });
   it("passes a configured backend key only in the server request header", async () => {
     vi.stubEnv("COBALT_API_URL", base.href); vi.stubEnv("COBALT_API_KEY", "explicit-unit-test-key");
     const fetch=vi.fn().mockResolvedValue(new Response(JSON.stringify(reply())));vi.stubGlobal("fetch",fetch);
@@ -42,7 +49,7 @@ describe("Cobalt media boundary", () => {
     vi.stubEnv("COBALT_API_URL", base.href);
     const fetch = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({status:"error",error:{code:"error.api.fetch.fail"}}),{status:400})).mockResolvedValueOnce(new Response(JSON.stringify(reply())));
     vi.stubGlobal("fetch", fetch);
-    expect((await resolveCobalt("https://www.tiktok.com/@fixture/video/6718335390845095173")).filename).toBe("test.mp4");
+    expect((await resolveCobalt("https://www.tiktok.com/@fixture/video/6718335390845095173")).directDownload?.filename).toBe("test.mp4");
     expect(fetch).toHaveBeenCalledTimes(2);
   });
 });

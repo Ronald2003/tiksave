@@ -2,6 +2,12 @@ import { describe, expect, it } from "vitest";
 import { parseVideoUrl, videoUrlSchema } from "@/lib/validation/video";
 
 describe("supported video URLs", () => {
+  it("accepts TikTok photo posts while keeping creator uploads video-only", async () => {
+    const url = "https://www.tiktok.com/@4kwallpapers85/photo/7688136271289388310?tracking=1";
+    expect(parseVideoUrl(url).url.pathname).toBe("/@4kwallpapers85/photo/7688136271289388310");
+    const { tiktokUrlSchema } = await import("@/lib/validation/tiktok");
+    expect(tiktokUrlSchema.safeParse(url).success).toBe(false);
+  });
   it.each([
     ["https://www.facebook.com/watch/?v=123456789", "Facebook"],
     ["https://fb.watch/abcdef/", "Facebook"],

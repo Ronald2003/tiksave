@@ -14,14 +14,15 @@ export async function POST(request: Request) { return api(async () => {
   const { url } = await readJson(request, z.object({ url: videoUrlSchema }));
   await rateLimit(request, "resolve");
   const parsed = parseVideoUrl(url);
-  const canonical = parsed.platform === "TikTok" ? await resolveTikTokUrl(url) : parsed;
+  const canonical = parsed.platform === "TikTok" ? await resolveTikTokUrl(url, true) : parsed;
   if (process.env.COBALT_API_URL) {
-    const [directDownload, metadata] = await Promise.all([resolveCobalt(canonical.url.href), parsed.platform === "TikTok" ? resolveMetadata(canonical.url.href) : Promise.resolve({ title: `${parsed.platform} video`, creatorName: undefined, thumbnailUrl: undefined })]);
+    const [media, metadata] = await Promise.all([resolveCobalt(canonical.url.href), parsed.platform === "TikTok" && !canonical.url.pathname.includes("/photo/") ? resolveMetadata(canonical.url.href) : Promise.resolve({ title: `${parsed.platform} ${canonical.url.pathname.includes("/photo/") ? "photos" : "video"}`, creatorName: undefined, thumbnailUrl: undefined })]);
     return json({ status: "ready", videoId: canonical.videoId, canonicalUrl: canonical.url.href,
       title: metadata.title, creatorName: metadata.creatorName, thumbnailUrl: metadata.thumbnailUrl,
-      directDownload, message: "An MP4 is available. Download shortly before the link expires. Quality and watermark presence depend on the source file." });
+      ...media, message: media.images ? "Photos are available. Save each image before the links expire." : "An MP4 is available. Download shortly before the link expires. Quality and watermark presence depend on the source file." });
   }
   if (parsed.platform !== "TikTok" || !canonical.videoId) throw new ApiError(503, "provider_configuration", "The video download backend is not configured.");
+  if (canonical.url.pathname.includes("/photo/")) throw new ApiError(503, "provider_configuration", "Photo downloads need the download backend. Please try again later.");
   const [metadata, assets] = await Promise.all([resolveMetadata(canonical.url.href), resolveOriginals(canonical.videoId)]);
   if (!publicConfig()) return json({ status: "provider_error", videoId: canonical.videoId, canonicalUrl: canonical.url.href, title: metadata.title, creatorName: metadata.creatorName, thumbnailUrl: metadata.thumbnailUrl, assets: [], message: "Video link recognized. Creator storage is not configured, so clean-source availability cannot be checked." });
   return json(availability(assets, {

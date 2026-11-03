@@ -20,6 +20,18 @@ beforeEach(() => {
   vi.mocked(resolveOriginals).mockResolvedValue([]);
 });
 describe("resolve API availability honesty", () => {
+  it("returns photos without querying video metadata or the creator library", async () => {
+    const photoUrl = "https://www.tiktok.com/@4kwallpapers85/photo/7688136271289388310";
+    vi.stubEnv("COBALT_API_URL", "https://backend.example/");
+    vi.mocked(resolveTikTokUrl).mockResolvedValue({ url: new URL(photoUrl), videoId: "7688136271289388310", creator: "4kwallpapers85" });
+    vi.mocked(resolveCobalt).mockResolvedValue({ images: [{ url: "https://backend.example/tunnel", filename: "image-1", expiresAt: Date.now()+90000 }] });
+    const response = await POST(new Request("http://localhost:3000/api/videos/resolve", { method: "POST", headers: { Origin: "http://localhost:3000", "Content-Type": "application/json" }, body: JSON.stringify({ url: photoUrl }) }));
+    expect(response.status).toBe(200);
+    expect((await response.json()).data.images).toHaveLength(1);
+    expect(resolveTikTokUrl).toHaveBeenCalledWith(photoUrl, true);
+    expect(resolveMetadata).not.toHaveBeenCalled();
+    expect(resolveOriginals).not.toHaveBeenCalled();
+  });
   it("rejects YouTube before contacting any downloader", async () => {
     vi.stubEnv("COBALT_API_URL", "https://backend.example/");
     const response = await POST(new Request("http://localhost:3000/api/videos/resolve", { method: "POST", headers: { Origin: "http://localhost:3000", "Content-Type": "application/json" }, body: JSON.stringify({ url: "https://youtu.be/bTsGuYRerK8" }) }));
@@ -28,7 +40,7 @@ describe("resolve API availability honesty", () => {
   });
   it.each(["https://www.facebook.com/watch/?v=123456789", "https://www.instagram.com/reel/abcdef/"])("routes %s to Cobalt without TikTok fetches", async (url) => {
     vi.stubEnv("COBALT_API_URL", "https://backend.example/");
-    vi.mocked(resolveCobalt).mockResolvedValue({ url: "https://backend.example/tunnel", filename: "video.mp4", expiresAt: Date.now() + 90000 });
+    vi.mocked(resolveCobalt).mockResolvedValue({ directDownload: { url: "https://backend.example/tunnel", filename: "video.mp4", expiresAt: Date.now() + 90000 } });
     const response = await POST(new Request("http://localhost:3000/api/videos/resolve", { method: "POST", headers: { Origin: "http://localhost:3000", "Content-Type": "application/json" }, body: JSON.stringify({ url }) }));
     expect(response.status).toBe(200);
     expect((await response.json()).data.status).toBe("ready");

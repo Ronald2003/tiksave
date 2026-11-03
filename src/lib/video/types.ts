@@ -7,5 +7,6 @@ export interface VideoResult {
   status: VideoStatus; videoId?: string; canonicalUrl?: string; title?: string; creatorName?: string;
   thumbnailUrl?: string; durationSeconds?: number; resolution?: string; fileSizeBytes?: number;
   availableQualities?: string[]; assets?: { id: string; label: string; fileSize: number }[]; message?: string;
+  images?: { url: string; filename: string; expiresAt: number }[];
   directDownload?: { url: string; filename: string; expiresAt: number };
 }
