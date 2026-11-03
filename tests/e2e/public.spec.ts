@@ -8,6 +8,7 @@ test("homepage is responsive with the vector theme", async ({ page }, testInfo) 
   await expect(page.getByRole("link", { name: "Sign in", exact: true })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Open your creator library" })).toHaveCount(0);
   await page.screenshot({ path: `test-results/home-${testInfo.project.name}.png`, fullPage: true });
+  await page.screenshot({ path: `test-results/home-preview-${testInfo.project.name}.png` });
   await expect(page.locator("html")).toHaveClass(/vector-theme/);
   await expect(page.getByText("No registration. No extra steps.", {exact:true})).toHaveCount(0);
   await expect(page.getByRole("button", { name: /Switch to .* theme/ })).toHaveCount(0);
