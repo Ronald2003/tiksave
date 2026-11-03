@@ -90,3 +90,4 @@ Audit reference: [minimatch globparts amplification advisory](https://github.com
 
 - Removed YouTube URL support, the Apify resolver and polling endpoint, polling UI, provider configuration instructions, and YouTube claims from page content and metadata at the user's request. Other platform routes and theme preferences are retained.
 - 119 tests pass, including rejection of YouTube links before any downloader call; strict typecheck and lint pass.
+- Fixed dark theme requested afterward: removed the switch, theme observation, and saved-preference script. Desktop/mobile homepage checks pass with a preexisting light preference and after reload; typecheck and lint pass.

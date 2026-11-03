@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
-test("homepage is responsive and supports theme switching", async ({ page }, testInfo) => {
+test("homepage is responsive and always dark", async ({ page }, testInfo) => {
+  await page.addInitScript(() => localStorage.setItem("theme", "light"));
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your favorite videos.Ready to save.");
   await expect(page.getByRole("button", { name: "Download", exact: true })).toBeVisible();
@@ -9,13 +10,9 @@ test("homepage is responsive and supports theme switching", async ({ page }, tes
   await page.screenshot({ path: `test-results/home-${testInfo.project.name}.png`, fullPage: true });
   await expect(page.locator("html")).toHaveClass(/dark/);
   await expect(page.getByText("No registration. No extra steps.", {exact:true})).toHaveCount(0);
-  await page.getByRole("button", { name: "Switch to light theme" }).click();
-  await expect(page.locator("html")).not.toHaveClass(/dark/);
+  await expect(page.getByRole("button", { name: /Switch to .* theme/ })).toHaveCount(0);
   await page.reload();
-  await expect(page.locator("html")).not.toHaveClass(/dark/);
-  await page.getByRole("button", { name: "Switch to dark theme" }).click();
   await expect(page.locator("html")).toHaveClass(/dark/);
-  await page.screenshot({ path: `test-results/home-dark-${testInfo.project.name}.png`, fullPage: true });
 });
 test("invalid link is rejected locally", async ({ page }) => {
   await page.goto("/");
