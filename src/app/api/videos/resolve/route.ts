@@ -18,8 +18,8 @@ export async function POST(request: Request) { return api(async () => {
   if (process.env.COBALT_API_URL) {
     const [media, metadata] = await Promise.all([resolveCobalt(canonical.url.href), parsed.platform === "TikTok" && !canonical.url.pathname.includes("/photo/") ? resolveMetadata(canonical.url.href) : Promise.resolve({ title: `${parsed.platform} ${canonical.url.pathname.includes("/photo/") ? "photos" : "video"}`, creatorName: undefined, thumbnailUrl: undefined })]);
     return json({ status: "ready", videoId: canonical.videoId, canonicalUrl: canonical.url.href,
-      title: metadata.title, creatorName: metadata.creatorName, thumbnailUrl: metadata.thumbnailUrl,
-      ...media, message: media.images ? "Photos are available. Save each image before the links expire." : "An MP4 is available. Download shortly before the link expires. Quality and watermark presence depend on the source file." });
+      title: media.images||media.videos?`${parsed.platform} post`:metadata.title, creatorName: metadata.creatorName, thumbnailUrl: metadata.thumbnailUrl,
+      ...media, message: media.videos?"Post media is available. Save each item before the links expire.":media.images ? "Photos are available. Save each image before the links expire." : "An MP4 is available. Download shortly before the link expires. Quality and watermark presence depend on the source file." });
   }
   if (parsed.platform !== "TikTok" || !canonical.videoId) throw new ApiError(503, "provider_configuration", "The video download backend is not configured.");
   if (canonical.url.pathname.includes("/photo/")) throw new ApiError(503, "provider_configuration", "Photo downloads need the download backend. Please try again later.");

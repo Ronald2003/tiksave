@@ -7,9 +7,20 @@ describe("Cobalt media boundary", () => {
   it("accepts photo collections only through validated backend tunnels", () => {
     const photo = { type: "photo", url: reply().url };
     expect(parseCobaltMedia({ status: "picker", picker: [photo, photo] }, base).images).toHaveLength(2);
-    for (const picker of [[], [{ ...photo, url: "https://evil.test/image.jpg" }], [{ ...photo, type: "video" }], [{ ...photo, url: `${base}tunnel?exp=1` }]]) {
+    for (const picker of [[], [{ ...photo, url: "https://evil.test/image.jpg" }], [{ ...photo, type: "gif" }], [{ ...photo, url: `${base}tunnel?exp=1` }]]) {
       expect(() => parseCobaltMedia({ status: "picker", picker }, base)).toThrow();
     }
+  });
+  it("accepts single Instagram image tunnels and mixed carousels",()=>{
+    expect(parseCobaltMedia({...reply(),filename:"instagram_photo.jpg"},base).images?.[0].filename).toBe("instagram_photo.jpg");
+    expect(()=>parseCobaltMedia({...reply(),filename:"instagram_photo.jpg",url:"https://evil.test/photo.jpg"},base)).toThrow();
+    const result=parseCobaltMedia({status:"picker",picker:[{type:"photo",url:reply().url},{type:"video",url:reply().url,thumb:reply().url}]},base);
+    expect(result.images).toHaveLength(1);expect(result.videos).toHaveLength(1);expect(result.videos?.[0].filename).toBe("video-2.mp4");
+    expect(()=>parseCobaltMedia({status:"picker",picker:[{type:"video",url:reply().url,thumb:"https://evil.test/photo.jpg"}]},base)).toThrow();
+  });
+  it("reports Instagram source failures without claiming they were video-format failures",()=>{
+    expect(()=>parseCobaltMedia({status:"error",error:{code:"error.api.fetch.empty"}},base,"Instagram")).toThrow("Instagram did not provide");
+    expect(()=>parseCobaltMedia({status:"error",error:{code:"error.api.content.post.private"}},base,"Instagram")).toThrow("private");
   });
   it("passes a configured backend key only in the server request header", async () => {
     vi.stubEnv("COBALT_API_URL", base.href); vi.stubEnv("COBALT_API_KEY", "explicit-unit-test-key");

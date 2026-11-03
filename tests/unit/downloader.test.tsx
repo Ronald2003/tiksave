@@ -6,6 +6,13 @@ import userEvent from "@testing-library/user-event";
 import { Downloader } from "@/components/downloader/downloader";
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 describe("downloader form", () => {
+  it("offers each photo and video in an Instagram carousel",async()=>{
+    const item={url:"https://backend.example/tunnel",filename:"item",expiresAt:Date.now()+90000};
+    vi.stubGlobal("fetch",vi.fn().mockResolvedValue({ok:true,json:async()=>({data:{status:"ready",images:[item],videos:[{...item,url:item.url+"?video=1",filename:"video.mp4"}]}})}));
+    const user=userEvent.setup();render(<Downloader/>);
+    await user.type(screen.getByRole("textbox"),"https://www.instagram.com/p/example/");await user.click(screen.getByRole("button",{name:"Download"}));
+    expect(await screen.findByRole("link",{name:"Save video 1"})).toHaveAttribute("download","video.mp4");expect(screen.getByRole("link",{name:"Save image 1"})).toBeVisible();expect(screen.getByRole("textbox")).toHaveValue("");
+  });
   it("shows image downloads and clears a successful link", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ data: { status: "ready", images: [{ url: "https://backend.example/tunnel", filename: "image-1", expiresAt: Date.now()+90000 }] } }) }));
     const user=userEvent.setup(); render(<Downloader />);

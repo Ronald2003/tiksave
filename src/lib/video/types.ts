@@ -8,5 +8,6 @@ export interface VideoResult {
   thumbnailUrl?: string; durationSeconds?: number; resolution?: string; fileSizeBytes?: number;
   availableQualities?: string[]; assets?: { id: string; label: string; fileSize: number }[]; message?: string;
   images?: { url: string; filename: string; expiresAt: number }[];
+  videos?: { url: string; filename: string; expiresAt: number; thumbnailUrl?: string }[];
   directDownload?: { url: string; filename: string; expiresAt: number };
 }

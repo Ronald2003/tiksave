@@ -27,11 +27,22 @@ function parseTunnel(value: string, endpoint: URL) {
   }
   return { url: url.href, expiresAt };
 }
-export function parseCobaltMedia(value: unknown, endpoint: URL): Pick<import("@/lib/video/types").VideoResult, "directDownload" | "images"> {
+export function parseCobaltMedia(value: unknown, endpoint: URL, platform?: string): Pick<import("@/lib/video/types").VideoResult, "directDownload" | "images" | "videos"> {
+  const failure=z.object({error:z.object({code:z.string()})}).safeParse(value);
+  if(failure.success) {
+    const code=failure.data.error.code;
+    if(code==="error.api.content.post.private"||code==="error.api.content.post.age") throw new ApiError(422,"authorization_required","This post is private, age-restricted, or requires authorized access. It cannot be downloaded here.");
+    if(platform==="Instagram"&&(code==="error.api.fetch.empty"||code==="error.api.fetch.fail")) throw new ApiError(422,"source_unavailable","Instagram did not provide downloadable media to this server. The post may be unavailable, require sign-in, or be blocked from this hosting network. Try another public post.");
+    throw new ApiError(422,"video_not_found","The source did not provide downloadable photos or video for this post. It may be unavailable or unsupported.");
+  }
+  const photo=z.object({status:z.literal("tunnel"),url:z.url(),filename:z.string().max(250).regex(/\.(?:jpe?g|png|webp|gif)$/i)}).safeParse(value);
+  if(photo.success)return {images:[{...parseTunnel(photo.data.url,endpoint),filename:photo.data.filename.replace(/[^a-zA-Z0-9._-]/g,"_").slice(-180)}]};
   if (z.object({ status: z.literal("picker") }).safeParse(value).success) {
-    const result = z.object({ picker: z.array(z.object({ type: z.literal("photo"), url: z.url() })).min(1).max(50) }).safeParse(value);
-    if (!result.success) throw new ApiError(422, "unsupported_media", "This collection could not be downloaded as photos. Try a photo-only post.");
-    return { images: result.data.picker.map((item, index) => ({ ...parseTunnel(item.url, endpoint), filename: `image-${index + 1}` })) };
+    const result = z.object({ picker: z.array(z.object({ type: z.enum(["photo","video"]), url: z.url(),thumb:z.url().optional() })).min(1).max(50) }).safeParse(value);
+    if (!result.success) throw new ApiError(422, "unsupported_media", "This collection contains an unsupported media type.");
+    const items=result.data.picker.map((item,index)=>({...parseTunnel(item.url,endpoint),type:item.type,filename:`${item.type==="photo"?"image":"video"}-${index+1}${item.type==="video"?".mp4":""}`,thumbnailUrl:item.thumb?parseTunnel(item.thumb,endpoint).url:undefined}));
+    const images=items.filter(item=>item.type==="photo"),videos=items.filter(item=>item.type==="video");
+    return { images:images.length?images:undefined,videos:videos.length?videos:undefined };
   }
   return { directDownload: parseCobaltDownload(value, endpoint) };
 }
@@ -67,5 +78,5 @@ export async function resolveCobalt(canonicalUrl: string) {
   let data = await requestCobalt(endpoint, canonicalUrl);
   // Retry a transient page fetch once; never retry restrictions, rate limits, or authorization errors.
   if (z.object({ error: z.object({ code: z.literal("error.api.fetch.fail") }) }).safeParse(data).success) data = await requestCobalt(endpoint, canonicalUrl);
-  return parseCobaltMedia(data, endpoint);
+  return parseCobaltMedia(data, endpoint, ["instagram.com","www.instagram.com"].includes(new URL(canonicalUrl).hostname)?"Instagram":undefined);
 }
