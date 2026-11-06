@@ -32,6 +32,7 @@ export function parseCobaltMedia(value: unknown, endpoint: URL, platform?: strin
   if(failure.success) {
     const code=failure.data.error.code;
     if(code==="error.api.content.post.private"||code==="error.api.content.post.age") throw new ApiError(422,"authorization_required","This post is private, age-restricted, or requires authorized access. It cannot be downloaded here.");
+    if (code === "error.api.content.post.unavailable") throw new ApiError(422, "post_unavailable", "This post is unavailable to the downloader. Open the original link or try another public post.");
     if(platform==="Instagram"&&(code==="error.api.fetch.empty"||code==="error.api.fetch.fail")) throw new ApiError(422,"source_unavailable","Instagram did not provide downloadable media to this server. The post may be unavailable, require sign-in, or be blocked from this hosting network. Try another public post.");
     throw new ApiError(422,"video_not_found","The source did not provide downloadable photos or video for this post. It may be unavailable or unsupported.");
   }

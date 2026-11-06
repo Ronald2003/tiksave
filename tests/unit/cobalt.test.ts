@@ -22,6 +22,17 @@ describe("Cobalt media boundary", () => {
     expect(()=>parseCobaltMedia({status:"error",error:{code:"error.api.fetch.empty"}},base,"Instagram")).toThrow("Instagram did not provide");
     expect(()=>parseCobaltMedia({status:"error",error:{code:"error.api.content.post.private"}},base,"Instagram")).toThrow("private");
   });
+  it("reports an unavailable TikTok post without retrying the provider", async () => {
+    vi.stubEnv("COBALT_API_URL", base.href);
+    const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      status: "error", error: { code: "error.api.content.post.unavailable" },
+    }), { status: 400 }));
+    vi.stubGlobal("fetch", fetch);
+    await expect(resolveCobalt("https://www.tiktok.com/@fixture/video/6718335390845095173")).rejects.toMatchObject({
+      status: 422, code: "post_unavailable", message: "This post is unavailable to the downloader. Open the original link or try another public post.",
+    });
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
   it("passes a configured backend key only in the server request header", async () => {
     vi.stubEnv("COBALT_API_URL", base.href); vi.stubEnv("COBALT_API_KEY", "explicit-unit-test-key");
     const fetch=vi.fn().mockResolvedValue(new Response(JSON.stringify(reply())));vi.stubGlobal("fetch",fetch);
