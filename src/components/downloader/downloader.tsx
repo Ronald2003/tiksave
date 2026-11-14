@@ -8,6 +8,7 @@ import { ArrowDownToLine, ArrowRight, Check, Clipboard, Copy, Film, Link2, Loade
 import { Button } from "@/components/ui/button";
 import { videoUrlSchema } from "@/lib/validation/video";
 import { downloadAsset, requestApi } from "@/lib/client-api";
+import { ApiError } from "@/lib/security/errors";
 import { formatBytes } from "@/lib/utils";
 import type { VideoResult } from "@/lib/video/types";
 const schema = z.object({ url: videoUrlSchema });
@@ -17,12 +18,45 @@ export function Downloader() {
   const [downloading, setDownloading] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [expired, setExpired] = useState(false);
+  const [waitingForServer, setWaitingForServer] = useState(false);
   const reduce = useReducedMotion();
   const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<z.infer<typeof schema>>({ resolver: zodResolver(schema), defaultValues: { url: "" } });
   async function resolve(values: z.infer<typeof schema>) {
     setError(""); setResult(null); setExpired(false); setCopied(false);
-    try { const next = await requestApi<VideoResult>("/api/videos/resolve", { method: "POST", body: JSON.stringify(values) }); setResult(next); if (next.status === "ready") setValue("url", "", { shouldValidate: false, shouldDirty: false }); }
-    catch (error) { setError((error as Error).message); }
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 90_000);
+    const { signal } = controller;
+    const options = { method: "POST", body: JSON.stringify(values), signal };
+    try {
+      while (!signal.aborted) {
+        try {
+          const next = await requestApi<VideoResult>("/api/videos/resolve", options);
+          setResult(next);
+          if (next.status === "ready") setValue("url", "", { shouldValidate: false, shouldDirty: false });
+          return;
+        } catch (error) {
+          if (signal.aborted || !(error instanceof ApiError) || error.code !== "provider_unreachable") throw error;
+          setWaitingForServer(true);
+          await new Promise<void>(resolve => {
+            const timer = setTimeout(() => {
+              signal.removeEventListener("abort", stopWaiting);
+              resolve();
+            }, 5000);
+            function stopWaiting() {
+              clearTimeout(timer);
+              resolve();
+            }
+            signal.addEventListener("abort", stopWaiting, { once: true });
+          });
+        }
+      }
+    } catch (error) {
+      if (!signal.aborted) { setError((error as Error).message); return; }
+    } finally {
+      clearTimeout(timeout);
+      setWaitingForServer(false);
+    }
+    setError("The download server took too long to respond. Press Download to try again.");
   }
   async function paste() {
     setError("");
@@ -48,10 +82,10 @@ export function Downloader() {
         <Button type="button" variant="secondary" size="sm" onClick={paste} disabled={isSubmitting}><Clipboard size={15} aria-hidden="true" />Paste</Button>
       </div>
       {errors.url && <p className="field-error" id="url-error" role="alert">{errors.url.message}</p>}
-      <Button type="submit" disabled={isSubmitting} className="download-submit">{isSubmitting ? <LoaderCircle className="spin" size={19} aria-hidden="true" /> : <ArrowDownToLine size={19} aria-hidden="true" />}{isSubmitting ? "Checking your link..." : "Download"}<ArrowRight size={18} aria-hidden="true" /></Button>
+      <Button type="submit" disabled={isSubmitting} className="download-submit">{isSubmitting ? <LoaderCircle className="spin" size={19} aria-hidden="true" /> : <ArrowDownToLine size={19} aria-hidden="true" />}{waitingForServer ? "Waiting for server…" : isSubmitting ? "Checking your link..." : "Download"}<ArrowRight size={18} aria-hidden="true" /></Button>
     </form>
     {error && <div className="alert error-alert" role="alert"><span>{error}</span><button onClick={() => setError("")} aria-label="Dismiss message"><X size={17} /></button></div>}
-    {isSubmitting && <div className="result-panel result-skeleton" role="status" aria-label="Checking video details and original availability"><div className="skeleton skeleton-thumb" /><div><div className="skeleton skeleton-line" /><div className="skeleton skeleton-line short" /><p>Checking video details and original availability…</p></div></div>}
+    {isSubmitting && <div className="result-panel result-skeleton" role="status"><div className="skeleton skeleton-thumb" aria-hidden="true" /><div><div className="skeleton skeleton-line" aria-hidden="true" /><div className="skeleton skeleton-line short" aria-hidden="true" />{waitingForServer ? <><strong>Waking up the download server…</strong><p>This can take about a minute. We’ll check your link automatically when it’s ready.</p></> : <p>Checking your link…</p>}</div></div>}
     {result && <motion.section initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="result-panel" aria-label="Download result" aria-live="polite">
       {!result.images && !result.videos && (<div className="result-preview">{result.thumbnailUrl ? <img src={result.thumbnailUrl} alt="Video thumbnail" width="100" height="130" referrerPolicy="no-referrer" /> : <div className="empty-thumbnail"><Film size={28} aria-hidden="true" /><span>No preview</span></div>}</div>)}
       <div className="result-details"><span className={`status-label ${result.status === "ready" ? "status-ready" : ""}`}>{result.status === "ready" ? <><Check size={13} aria-hidden="true" />{result.videos ? "Post media available" : result.images ? `${result.images.length} photos available` : result.directDownload ? "Video available" : "Original available"}</> : result.status === "provider_error" ? "Availability not checked" : "Original unavailable"}</span>

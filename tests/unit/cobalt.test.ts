@@ -4,6 +4,18 @@ afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 const base = new URL("http://127.0.0.1:9000/");
 const reply = () => ({ status: "tunnel", url: `${base}tunnel?exp=${Date.now()+90000}&sig=test`, filename: "test.mp4" });
 describe("Cobalt media boundary", () => {
+  it.each([
+    [503, "text/html"],
+    [200, "text/html; charset=utf-8"],
+  ])("reports an upstream startup response (%s) as retryable", async (status, contentType) => {
+    vi.stubEnv("COBALT_API_URL", base.href);
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("<html>Starting</html>", {
+      status, headers: { "Content-Type": contentType },
+    })));
+    await expect(resolveCobalt("https://www.tiktok.com/@fixture/video/6718335390845095173"))
+      .rejects.toMatchObject({ status: 503, code: "provider_unreachable" });
+  });
+
   it("accepts photo collections only through validated backend tunnels", () => {
     const photo = { type: "photo", url: reply().url };
     expect(parseCobaltMedia({ status: "picker", picker: [photo, photo] }, base).images).toHaveLength(2);
