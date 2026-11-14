@@ -1,76 +1,11 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Downloader } from "@/components/downloader/downloader";
-
-vi.mock("motion/react", async (importOriginal) => ({
-  ...await importOriginal<typeof import("motion/react")>(),
-  useReducedMotion: () => true,
-}));
-
-afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.useRealTimers(); });
+afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 describe("downloader form", () => {
-  it("waits for the backend and retries the submitted link automatically", async () => {
-    vi.useFakeTimers();
-    const url = "https://www.tiktok.com/@a/video/6718335390845095173";
-    const fetch = vi.fn()
-      .mockResolvedValueOnce(new Response(JSON.stringify({
-        error: { code: "provider_unreachable", message: "Backend did not respond." },
-      }), { status: 503 }))
-      .mockResolvedValueOnce(new Response(JSON.stringify({
-        data: { status: "ready", directDownload: { url: "https://backend.example/tunnel", filename: "video.mp4", expiresAt: Date.now() + 120000 } },
-      })));
-    vi.stubGlobal("fetch", fetch);
-    render(<Downloader />);
-    const input = screen.getByRole("textbox");
-    fireEvent.change(input, { target: { value: url } });
-    await act(async () => { fireEvent.submit(input.closest("form")!); });
-
-    expect(screen.getByRole("status")).toHaveTextContent("Waking up the download server");
-    expect(screen.getByRole("button", { name: "Waiting for server…" })).toBeDisabled();
-    expect(screen.queryByRole("alert")).toBeNull();
-    expect(input).toHaveValue(url);
-
-    await act(async () => { await vi.advanceTimersByTimeAsync(5000); });
-    expect(fetch).toHaveBeenCalledTimes(2);
-    expect(fetch.mock.calls.map(([, options]) => JSON.parse(options.body))).toEqual([{ url }, { url }]);
-    expect(screen.getByRole("link", { name: "Download MP4" })).toBeVisible();
-    expect(input).toHaveValue("");
-  });
-
-  it("shows a rate-limit service error immediately", async () => {
-    const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({
-      error: { code: "rate_limit_unavailable", message: "Request protection is temporarily unavailable." },
-    }), { status: 503 }));
-    vi.stubGlobal("fetch", fetch);
-    render(<Downloader />);
-    const input = screen.getByRole("textbox");
-    fireEvent.change(input, { target: { value: "https://www.tiktok.com/@a/video/6718335390845095173" } });
-    await act(async () => { fireEvent.submit(input.closest("form")!); });
-    expect(screen.getByRole("alert")).toHaveTextContent("Request protection is temporarily unavailable.");
-    expect(fetch).toHaveBeenCalledTimes(1);
-  });
-
-  it("stops retrying after 90 seconds and keeps the pasted link", async () => {
-    vi.useFakeTimers();
-    const url = "https://www.tiktok.com/@a/video/6718335390845095173";
-    const fetch = vi.fn().mockImplementation(async () => new Response(JSON.stringify({
-      error: { code: "provider_unreachable", message: "Backend did not respond." },
-    }), { status: 503 }));
-    vi.stubGlobal("fetch", fetch);
-    render(<Downloader />);
-    const input = screen.getByRole("textbox");
-    fireEvent.change(input, { target: { value: url } });
-    await act(async () => { fireEvent.submit(input.closest("form")!); });
-    await act(async () => { await vi.advanceTimersByTimeAsync(90_000); });
-
-    expect(screen.getByRole("alert")).toHaveTextContent("took too long to respond");
-    expect(screen.getByRole("button", { name: "Download" })).toBeEnabled();
-    expect(input).toHaveValue(url);
-    expect(fetch).toHaveBeenCalledTimes(18);
-  });
   it("offers each photo and video in an Instagram carousel",async()=>{
     const item={url:"https://backend.example/tunnel",filename:"item",expiresAt:Date.now()+90000};
     vi.stubGlobal("fetch",vi.fn().mockResolvedValue({ok:true,json:async()=>({data:{status:"ready",images:[item],videos:[{...item,url:item.url+"?video=1",filename:"video.mp4"}]}})}));

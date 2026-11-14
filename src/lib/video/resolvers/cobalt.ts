@@ -48,19 +48,14 @@ export function parseCobaltMedia(value: unknown, endpoint: URL, platform?: strin
   return { directDownload: parseCobaltDownload(value, endpoint) };
 }
 async function requestCobalt(endpoint: URL, canonicalUrl: string) {
-  const signal = AbortSignal.timeout(15000);
   let response: Response;
   try {
     response = await fetch(endpoint, {
       method: "POST", headers: { Accept: "application/json", "Content-Type": "application/json", ...(process.env.COBALT_API_KEY ? { Authorization: `Api-Key ${process.env.COBALT_API_KEY}` } : {}) },
       body: JSON.stringify({ url: canonicalUrl, downloadMode: "auto", videoQuality: "1080", alwaysProxy: true, localProcessing: "disabled", filenameStyle: "basic" }),
-      signal, redirect: "error", cache: "no-store",
+      signal: AbortSignal.timeout(15000), redirect: "error", cache: "no-store",
     });
-  } catch { throw new ApiError(503, "provider_unreachable", "The download server did not respond."); }
-  if ([502, 503, 504].includes(response.status) || (response.ok && response.headers.get("content-type")?.startsWith("text/html"))) {
-    await response.body?.cancel();
-    throw new ApiError(503, "provider_unreachable", "The download server is temporarily unavailable.");
-  }
+  } catch { throw new ApiError(503, "provider_error", "The download backend is offline or did not respond. Please try again later."); }
   if (response.status === 429 || response.status >= 500 || !response.body) { await response.body?.cancel(); throw new ApiError(response.status === 429 ? 429 : 503, "provider_error", "The download backend is temporarily unavailable. Please try again later."); }
   const reader = response.body.getReader();
   const chunks: Uint8Array[] = [];
@@ -73,9 +68,6 @@ async function requestCobalt(endpoint: URL, canonicalUrl: string) {
       if (size > 65536) { await reader.cancel(); throw new ApiError(502, "provider_error", "The download backend returned an oversized response."); }
       chunks.push(value);
     }
-  } catch (error) {
-    if (signal.aborted) throw new ApiError(503, "provider_unreachable", "The download server did not respond.");
-    throw error;
   } finally { reader.releaseLock(); }
   let data: unknown;
   try { data = JSON.parse(Buffer.concat(chunks).toString("utf8")); }
