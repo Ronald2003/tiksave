@@ -53,6 +53,40 @@ describe("downloader form", () => {
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 
+  it("retries non-JSON gateway timeouts while the backend wakes up", async () => {
+    vi.useFakeTimers();
+    const url = "https://www.tiktok.com/@a/video/6718335390845095173";
+    const fetch = vi.fn()
+      .mockResolvedValueOnce(new Response("Gateway Timeout", { status: 504, headers: { "Content-Type": "text/html" } }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        data: { status: "ready", directDownload: { url: "https://backend.example/tunnel", filename: "video.mp4", expiresAt: Date.now() + 120000 } },
+      })));
+    vi.stubGlobal("fetch", fetch);
+    render(<Downloader />);
+    const input = screen.getByRole("textbox");
+    fireEvent.change(input, { target: { value: url } });
+    await act(async () => { fireEvent.submit(input.closest("form")!); });
+
+    expect(screen.getByRole("status")).toHaveTextContent("Waking up the download server");
+    expect(screen.getByRole("button", { name: "Waiting for server…" })).toBeDisabled();
+    expect(screen.queryByRole("alert")).toBeNull();
+
+    await act(async () => { await vi.advanceTimersByTimeAsync(5000); });
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(screen.getByRole("link", { name: "Download MP4" })).toBeVisible();
+  });
+
+  it("shows a non-JSON edge rate-limit error without retrying", async () => {
+    const fetch = vi.fn().mockResolvedValue(new Response("Rate limit exceeded", { status: 429 }));
+    vi.stubGlobal("fetch", fetch);
+    render(<Downloader />);
+    const input = screen.getByRole("textbox");
+    fireEvent.change(input, { target: { value: "https://www.tiktok.com/@a/video/6718335390845095173" } });
+    await act(async () => { fireEvent.submit(input.closest("form")!); });
+    expect(screen.getByRole("alert")).toHaveTextContent("Too many requests. Wait a minute and try again.");
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
   it("stops retrying after 90 seconds and keeps the pasted link", async () => {
     vi.useFakeTimers();
     const url = "https://www.tiktok.com/@a/video/6718335390845095173";
