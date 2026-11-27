@@ -17,7 +17,8 @@ it("rechecks a concurrent writer before allowing another download", async () => 
 });
 
 it("starts a new window when the previous counter expires", async () => {
-  vi.stubEnv("NETLIFY", "true");
+  vi.stubEnv("NETLIFY", undefined);
+  vi.stubEnv("SITE_ID", "site-at-runtime");
   store.getWithMetadata.mockResolvedValue({ etag: "v1", data: { count: 20, expires: 1 } });
   store.setJSON.mockResolvedValue({ modified: true });
   await rateLimit(new Request("https://example.com"), "resolve");
